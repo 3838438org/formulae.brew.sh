@@ -25,14 +25,33 @@ module MainImport
     end
   end
 
-  def official_taps
+  def brew_taps
     official_taps_path = "#{path}/Library/Homebrew/official_taps.rb"
     official_taps_rb = File.read official_taps_path
 
-    homebrew = Module.new
-    homebrew.module_eval official_taps_rb, official_taps_path
+    brew = Module.new
+    brew.module_eval official_taps_rb, official_taps_path
+    brew
+  end
 
-    homebrew.const_get :OFFICIAL_TAPS
+  def deprecated_official_taps
+    brew_taps.const_get :DEPRECATED_OFFICIAL_TAPS
+  end
+
+  def official_taps
+    brew_taps.const_get :OFFICIAL_TAPS
+  end
+
+  def update_deprecated_taps
+    deprecated_official_taps.each do |tap|
+      tap_name = "Homebrew/homebrew-#{tap}"
+
+      repo = Repository.find tap_name
+      unless repo.nil? || repo.outdated?
+        repo.outdated = true
+        repo.save
+      end
+    end
   end
 
   def update_status

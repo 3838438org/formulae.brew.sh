@@ -78,6 +78,7 @@ namespace :braumeister do
     rollbar_rescued do
       repo = Repository.main.extend MainImport
       repo.update_status
+      repo.update_deprecated_taps
       repo.create_missing_taps
     end
   end
